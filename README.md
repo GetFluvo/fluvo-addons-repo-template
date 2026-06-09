@@ -1,6 +1,6 @@
-# ODF Addons Repo Template
+# Fluvo Addons Repo Template
 
-This is a template created to make easier the task of maintaining ODF addon
+This is a template created to make easier the task of maintaining Fluvo addon
 repositories.
 
 ## Why?
@@ -26,7 +26,7 @@ pipx install copier
 pipx install pre-commit
 pipx ensurepath
 # Clone this template and answer its questions
-copier copy --UNSAFE https://github.com/OdooDataFlow/odf-addons-repo-template.git some-repo
+copier copy --UNSAFE https://github.com/GetFluvo/fluvo-addons-repo-template.git some-repo
 # Commit that
 cd some-repo
 git add .
@@ -69,7 +69,7 @@ This template allows to bootstrap and update addon repositories for these Odoo v
 Future versions will be added as they are released. Past versions could be added as long
 as they don't break existing branches.
 
-Right now this template is tightly coupled with code, guidelines and decisions from ODF.
+Right now this template is tightly coupled with code, guidelines and decisions from Fluvo.
 You might find some things that you can reuse in your own templates, but in general
 terms this template is not meant to support being used as is for other organizations.
 
