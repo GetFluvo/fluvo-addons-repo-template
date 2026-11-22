@@ -1,3 +1,4 @@
+{% from 'src/.pre-commit-config.yaml.jinja' import repo_rev with context %}
 name: pre-commit
 
 on:
@@ -9,32 +10,39 @@ on:
       - "{{ odoo_version }}"
       - "{{ odoo_version }}-ocabot-*"
 
+concurrency:
+  group: {% raw %}${{ github.workflow }}-${{ github.ref }}{% endraw %}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
 jobs:
   pre-commit:
-{%- if odoo_version < 14 %}
-    runs-on: ubuntu-20.04
-{%- else %}
     runs-on: ubuntu-22.04
-{%- endif %}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
 {%- if odoo_version < 11 %}
         with:
           python-version: "2.7"
 {%- elif odoo_version < 13 %}
         with:
-          python-version: "3.6"
+          python-version: "3.7"
 {%- elif odoo_version < 14 %}
         with:
           python-version: "3.8"
 {%- else %}
         with:
-          python-version: "3.11"
+          python-version: "{{ repo_rev.python |replace('python','') }}"
 {%- endif %}
+          cache: 'pip'
+          cache-dependency-path: '.pre-commit-config.yaml'
       - name: Get python version
         run: echo "PY=$(python -VV | sha256sum | cut -d' ' -f1)" >> $GITHUB_ENV
-      - uses: actions/cache@v4
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/pre-commit
           key: {% raw %}pre-commit|${{ env.PY }}|${{ hashFiles('.pre-commit-config.yaml') }}{% endraw %}
