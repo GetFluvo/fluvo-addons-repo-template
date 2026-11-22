@@ -138,6 +138,8 @@
   {%- set repo_rev.python = "python3.12" %}
 {%- endif %}
 
+{%- set repo_rev.odoo_lint = "v0.1.0a21" %}
+
 {#- Older versions that differ a lot have their own hardcoded templates for readability #}
 {%- if odoo_version < 13 %}
   {%- include "version-specific/mqt-compat/.pre-commit-config.yaml.jinja" %}
@@ -208,8 +210,10 @@ repos:
     hooks:
       # update the NOT INSTALLABLE ADDONS section above
       - id: oca-update-pre-commit-excluded-addons
+      {%- if not use_odoo_lint %}
       - id: oca-fix-manifest-website
         args: ["{{ repo_website }}"]
+      {%- endif %}
       - id: oca-gen-addon-readme
         args:
           - --addons-dir=.
@@ -221,7 +225,10 @@ repos:
           {%- if convert_readme_fragments_to_markdown %}
           - --convert-fragments-to-markdown
           {%- endif %}
-      {%- if use_pyproject_toml and generate_requirements_txt %}
+      {%- if generate_addons_table %}
+      - id: oca-gen-addons-table
+      {%- endif %}
+      {%- if use_pyproject_toml and generate_requirements_txt and not use_odoo_lint %}
       - id: oca-gen-external-dependencies
       {%- if odoo_version >= 20 %}
         additional_dependencies:
@@ -229,6 +236,18 @@ repos:
           - manifestoo-core>=v1.16.1
       {%- endif %}
       {%- endif %}
+  {%- if use_odoo_lint %}
+  - repo: https://github.com/GetFluvo/odoo-lint-pre-commit
+    rev: {{ repo_rev.odoo_lint }}
+    hooks:
+      # pylint-odoo, oca-checks-odoo-module, oca-checks-po and
+      # oca-fix-manifest-website checks, configured in odoo-lint.toml
+      - id: odoo-lint
+        args: [--fix]
+      {%- if use_pyproject_toml and generate_requirements_txt %}
+      - id: odoo-lint-requirements
+      {%- endif %}
+  {%- else %}
   - repo: https://github.com/OCA/odoo-pre-commit-hooks
     rev: {{ repo_rev.odoo_pre_commit_hooks }}
     hooks:
@@ -240,6 +259,7 @@ repos:
       - id: oca-checks-po
         args:
           - --disable=po-pretty-format
+  {%- endif %}
   {%- if not use_ruff %}
   - repo: https://github.com/myint/autoflake
     rev: {{ repo_rev.autoflake }}
@@ -359,6 +379,7 @@ repos:
         args: [--fix, --exit-non-zero-on-fix]
       - id: ruff-format
   {%- endif %}
+  {%- if not use_odoo_lint %}
   - repo: https://github.com/OCA/pylint-odoo
     rev: {{ repo_rev.pylint_odoo }}
     hooks:
@@ -371,4 +392,5 @@ repos:
       - id: pylint_odoo
         args:
           - --rcfile=.pylintrc-mandatory
+  {%- endif %}
 {%- endif %}

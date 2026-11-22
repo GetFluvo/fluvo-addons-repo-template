@@ -84,6 +84,29 @@ generate_requirements_txt:
     Generate requirements.txt from addons manifests and optional overrides in setup.py
     files.
 
+use_odoo_lint:
+  default: "{% if odoo_version < 14.0 -%}no{% else %}yes{% endif %}"
+  type: bool
+  help:
+    Lint with odoo-lint (https://github.com/GetFluvo/odoo-lint) instead of pylint-odoo,
+    oca-checks-odoo-module, oca-checks-po, oca-fix-manifest-website and
+    oca-gen-external-dependencies.
+  when: "{{ odoo_version >= 14.0 }}"
+
+generate_addons_table:
+  default: yes
+  type: bool
+  help: Keep the table of addons in README.md up to date with pre-commit?
+
+github_enable_pypi_publish:
+  default: "{{ use_pyproject_toml }}"
+  type: bool
+  help:
+    Publish the addons to PyPI as odoo-addon-<name> wheels on every push to the
+    branch? Needs a PyPI trusted publisher (workflow pypi.yml, environment pypi) or a
+    PYPI_API_TOKEN secret.
+  when: "{{ use_pyproject_toml }}"
+
 postgres_image:
   type: str
   default: ""
